@@ -1,0 +1,9 @@
+source-name: test-agent-makasym
+interval: 30s
+# Enable or disable metric collecting entities
+cpu: false
+memory: true
+# NEVER change <host_identificator> manually.
+# It is generated autumaticallly by Agent.
+# It provides uniqness of you Agent Collector.
+host_identificator: 0
