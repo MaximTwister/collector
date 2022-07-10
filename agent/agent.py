@@ -27,25 +27,17 @@ class Agent(AgentCollector):
         self.collect_cpu_metrics()
         self.collect_memory_metrics()
 
-    def create_meta_fields(self):
-        return {
-            "source_name": self.source_name,
-            "hostname": self.hostname,
-            "host_id": self.host_identificator,
-        }
-
     def send_metrics(self):
-        while self.metrics:
-            metric = self.metrics.pop()
-            metric.meta = self.create_meta_fields()
-
-            data = metric.to_json()
+        while self.metrics_models:
+            metric_model = self.metrics_models.pop()
+            data = metric_model.dict()
+            print(f"[debug][{type(data)}] send: {data}")
             res = requests.post(metrics_endpoint, json=data)
 
             if res.ok:
-                print(f"[debug] response {res.json()}")
+                print(f"[debug] response: {res.json()}")
             else:
-                print(f"[debug] bad response {res}")
+                print(f"[err] bad response: {res}")
 
     def job(self):
         self.collect()

@@ -1,15 +1,18 @@
+from time import time
 from typing import List
 
 import psutil
 
 from config import AgentConfig
-from metric import Metric
+from metric import Metric, MetricModel
 
 
 class AgentCollector(AgentConfig):
 
+    metric_keys = ("name", "value", "units")
+
     def __init__(self, *args, **kwargs):
-        self.metrics: List[Metric] = []
+        self.metrics_models: List[MetricModel] = []
         super().__init__(*args, **kwargs)
 
     def collect_cpu_metrics(self):
@@ -31,8 +34,7 @@ class AgentCollector(AgentConfig):
             ("cpu_time_idle", cpu_times.idle, units),
         ]
 
-        for metric in data:
-            self.metrics.append(Metric(*metric))
+        self.save_metrics(data)
 
     def collect_memory_metrics(self):
         """
@@ -40,6 +42,9 @@ class AgentCollector(AgentConfig):
         units: bytes
         :return: None
         """
+
+        if not self.memory:
+            return False
 
         units = "bytes"
         virtual_memory = psutil.virtual_memory()
@@ -51,10 +56,11 @@ class AgentCollector(AgentConfig):
             ("virt_mem_free", virtual_memory.free, units),
         ]
 
-        for metric in data:
-            self.metrics.append(Metric(*metric))
+        self.save_metrics(data)
 
-
-ac = AgentCollector(configuration_file="./configs/agent.yaml")
-ac.collect_cpu_metrics()
-ac.collect_memory_metrics()
+    def save_metrics(self, data):
+        for metric_values in data:
+            metric_kwargs = dict(zip(self.metric_keys, metric_values))
+            metric = Metric.parse_obj(metric_kwargs)
+            metric_model = MetricModel(ts=int(time()), metric=metric, meta=self.meta)
+            self.metrics_models.append(metric_model)

@@ -1,17 +1,19 @@
-class Metric:
+from pydantic import BaseModel, Field, PositiveFloat
 
-    def __init__(self, name, value, units):
-        self.name = name
-        self.value = value
-        self.units = units
-        self.meta = {}
 
-    def to_json(self):
-        return {
-            "metric": {
-                "name": self.name,
-                "value": self.value,
-                "units": self.units,
-            },
-            "meta": self.meta
-        }
+class Meta(BaseModel):
+    source_name: str
+    hostname: str
+    host_id: str
+
+
+class Metric(BaseModel):
+    name: str
+    value: PositiveFloat
+    units: str
+
+
+class MetricModel(BaseModel):
+    timestamp: int = Field(alias="ts")
+    metric: Metric
+    meta: Meta
