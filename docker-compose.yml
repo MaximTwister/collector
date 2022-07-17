@@ -1,0 +1,25 @@
+services:
+  collector_ubuntu:
+    image: ubuntu
+    volumes:
+      - ./agent:/collector/agent
+    working_dir: /collector/agent
+    command: >
+      bash -c "apt update -y &&
+      apt install -y python3 python3-pip &&
+      pwd && ls -lArth &&
+      pip install -r /collector/agent/requirements.txt &&
+      python3 agent.py --ip 192.168.1.50 --port 5001 --config /configs/agent.yaml"
+  collector_centos:
+    image: centos
+    volumes:
+      - ./agent:/collector/agent
+    working_dir: /collector/agent
+    command: >
+      bash -c "sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* &&
+      sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-* &&
+      yum update -y &&
+      yum install -y python3-devel libevent-devel gcc &&
+      yum install -y python3 python3-pip &&
+      pip install -r /collector/agent/requirements.txt &&
+      python3 agent.py --ip 192.168.1.50 --port 5001 --config /configs/agent.yaml"

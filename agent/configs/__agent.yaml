@@ -7,4 +7,4 @@ memory: true
 # NEVER change <host_identificator> manually.
 # It is generated autumaticallly by Agent.
 # It provides uniqness of you Agent Collector.
-host_id: 828434dc-0300-4ef2-a233-4dc631cc1c17
+host_id: 0
