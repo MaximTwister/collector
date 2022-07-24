@@ -1,5 +1,7 @@
-import uuid
+import os
+import shutil
 import socket
+import uuid
 
 from ruamel.yaml import YAML
 
@@ -30,7 +32,16 @@ class AgentConfig:
         with open(self.__config_file, "w") as f:
             self.agent_yaml.dump(config, f)
 
+    def prepare_config_infra(self):
+        if not os.path.isfile(self.__config_file):
+            path_elements = self.__config_file.split("/")[:-1]
+            path_elements = [el for el in path_elements if el]
+            dest_path = "/" + "/".join(path_elements)
+            os.makedirs(dest_path, exist_ok=True)
+            shutil.copyfile(src="configs/__agent.yaml", dst=self.__config_file)
+
     def parse_config(self):
+        self.prepare_config_infra()
         class_variables = AgentConfig.__dict__.keys()
         self.config = self.load_config_from_yaml()
         for key, value in self.config.items():
