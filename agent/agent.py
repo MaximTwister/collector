@@ -1,6 +1,7 @@
 import argparse
 
 import requests
+from requests.exceptions import ConnectionError
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 from collector import AgentCollector
@@ -32,7 +33,12 @@ class Agent(AgentCollector):
             metric_model = self.metrics_models.pop()
             data = metric_model.dict()
             print(f"[debug][{type(data)}] send: {data}")
-            res = requests.post(metrics_endpoint, json=data)
+
+            try:
+                res = requests.post(metrics_endpoint, json=data)
+            except ConnectionError as e:
+                print(f"[err] connection error: {e}")
+                continue
 
             if res.ok:
                 print(f"[debug] response: {res.json()}")
@@ -40,6 +46,7 @@ class Agent(AgentCollector):
                 print(f"[err] bad response: {res}")
 
     def job(self):
+        print(f"[info] Agent has been created")
         self.collect()
         self.send_metrics()
 
@@ -47,5 +54,10 @@ class Agent(AgentCollector):
 if __name__ == "__main__":
     agent = Agent(configuration_file=parser_args.config)
     scheduler = BlockingScheduler(standalone=True)
-    scheduler.add_job(agent.job, "interval", seconds=agent.interval, id="agent_job")
+    scheduler.add_job(
+        func=agent.job,
+        trigger="interval",
+        seconds=agent.interval,
+        id="agent_job",
+    )
     scheduler.start()

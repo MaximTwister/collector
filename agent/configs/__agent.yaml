@@ -5,6 +5,7 @@ interval: 30s
 cpu: true
 memory: true
 # NEVER change <host_identificator> manually.
-# It is generated autumaticallly by Agent.
+# It is generated automaticallly by Agent.
 # It provides uniqness of you Agent Collector.
+# If this value is 0 agent will generate the new host_id
 host_id: 0
